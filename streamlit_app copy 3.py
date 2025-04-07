@@ -7,12 +7,12 @@ from streamlit.components.v1 import html
 
 # 페이지 제목 설정
 def set_page_title():
-    st.title("주소로 지도 이동 및 화재 지점 표시")
+    st.title("화재 영향 시설물 분석 Tool")
 
 # 입력 필드 설정
 def set_input_fields():
     address = st.text_input("주소를 입력하세요:", value="부산시 부산진구 신천대로 258")
-    zoom_level = 15 #st.slider("최초 줌 레벨을 설정하세요:", min_value=1, max_value=20, value=15)
+    zoom_level = 15 # st.slider("최초 줌 레벨을 설정하세요:", min_value=1, max_value=20, value=15)
     return address, zoom_level
 
 # Geocoder 초기화
@@ -110,7 +110,10 @@ def main():
     address, zoom_level = set_input_fields()
     geolocator = initialize_geocoder()
     initialize_session_state(zoom_level)
-   
+
+    if st.button("주소로 이동"):
+        move_to_address(address, zoom_level, geolocator)
+
     # 초기 지도 설정 또는 저장된 상태 불러오기
     if 'map' not in st.session_state:
         m = create_map(st.session_state.map_state["location"][0], st.session_state.map_state["location"][1], st.session_state.map_state["zoom_level"])
@@ -118,24 +121,35 @@ def main():
     else:
         m = st.session_state.map
 
-    # 화재지점 GPS 좌표 표기
-    st.session_state.last_clicked_text
-
     # Use columns to position the button and text
     col1, col2 = st.columns([3, 1])  # Adjust the ratio as needed
 
     # 화재지점 변경 버튼
     with col1:
-   # Naver GPS 좌표 조회 기능으로 전환할 것!!
-        if st.button("주소로 이동"):
-             move_to_address(address, zoom_level, geolocator)
+        st.button("화재지점 변경", on_click=change_fire_location)
 
     # 마지막 클릭 위치 텍스트
     with col2:
-        st.button("화재지점 변경", on_click=change_fire_location)
+        html_content = f"""
+            <div style="
+                background-color: #f0f0f0;
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+                font-size: 14px;
+                color: #333;
+                text-align: center;
+                border: 1px solid #ccc;
+            ">
+                {st.session_state.last_clicked_text}
+            </div>
+        """
+        html(html_content)
+
 
     st_map = display_map(m, st.session_state.map_key)
     m = display_clicked_location(st_map, m)
+
 
     # Update the map
     st.session_state.map = m
