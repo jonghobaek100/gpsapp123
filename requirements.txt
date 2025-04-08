@@ -1,5 +1,9 @@
 streamlit
 folium
-geopy.geocoders
-streamlit_folium
 geopy
+streamlit-folium
+python-dotenv
+requests
+pytz
+pandas
+openai
